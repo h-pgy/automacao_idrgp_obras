@@ -17,13 +17,12 @@ class RestClient:
 
     def __set_token(self)->None:
 
-        self.session.headers.update()
+        self.session.headers.update({'Authorization' : f'Bearer {self.token}'})
 
 
     def get(self, namespace:str, endpoint:str, **query_params)->Union[dict, list]:
 
-        url = self.build_url(namespace, endpoint, query_params)
-
+        url = self.build_url(namespace, endpoint, **query_params)
         with self.session.get(url) as r:
             if r.status_code!=200:
                 raise RuntimeError(f'Falha na requisição. Status: {r.status_code}. Message: {r.text}')

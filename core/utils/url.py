@@ -6,7 +6,7 @@ class UrlBuilder:
 
     def __init__(self, domain: str):
 
-        self.domain = self.slash_ending(domain)
+        self.domain = 'https://' + self.slash_ending(domain)
 
     def slash_ending(self, slug : str)->str:
 

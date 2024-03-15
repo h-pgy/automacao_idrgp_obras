@@ -35,5 +35,16 @@ load_env()
 
 ORIGINAL_DATA_DIR=solve_dir(load_env_var('ORIGINAL_DATA_DIR'))
 GENERATED_DATA_DIR=solve_dir(load_env_var('GENERATED_DATA_DIR'))
+SHEET_NAME=load_env_var('SHEET_NAME')
+SKIP_ROWS=int(load_env_var('SKIP_ROWS'))
+
 
 SOF_API_TOKEN=load_env_var('SOF_API_TOKEN')
+SOF_API_HOST=load_env_var('SOF_API_HOST')
+SOF_API_VERSION=load_env_var('SOF_API_VERSION')
+
+
+COL_PROCESSO=load_env_var('COL_PROCESSO')
+COL_EMPENHO=load_env_var('COL_EMPENHO')
+COL_LIQUIDACAO=load_env_var('COL_LIQUIDACAO')
+COL_PROXY=load_env_var('COL_PROXY')

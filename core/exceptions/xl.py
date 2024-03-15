@@ -6,3 +6,6 @@ class XlNotFound(ValueError):
 
 class MoreThenOneFile(ValueError):
     pass
+
+class ColunaDadosNaoEncontrada(ValueError):
+    pass

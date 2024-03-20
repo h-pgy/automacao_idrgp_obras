@@ -10,8 +10,11 @@ class Load:
 
         self.fpath = solve_path(fname, GENERATED_DATA_DIR)
     
-    def __call__(self, df:DataFrame)->str:
+    def __call__(self, df:DataFrame, return_df=False)->str:
 
         df.to_excel(self.fpath)
+
+        if return_df:
+            return df
 
         return self.fpath

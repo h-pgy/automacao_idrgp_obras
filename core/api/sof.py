@@ -43,3 +43,17 @@ class ApiSof:
                 return resp[0]
         else:
             raise EmpenhoInexistente(f'Não foi encontrado nenhum empenho para o processo {num_proc} até janeiro de {ano_anterior}.')
+        
+    def get_empenho_last_year_by_proc(self, num_proc:int)->List[dict]:
+        '''Busca empenho do ano anterior, iniciando em dezembro até janeiro.'''
+
+        ano_anterior = current_year()-1
+        for month in range(12, 0, -1):
+            print(f'Mes: {month}')
+            resp = self.get_empenhos_by_proc(num_proc, month, ano_anterior)
+            if resp:
+                if type(resp) is dict:
+                    return resp
+                return resp[0]
+        else:
+            raise EmpenhoInexistente(f'Não foi encontrado nenhum empenho para o processo {num_proc} de dezembro até janeiro de {ano_anterior}.')

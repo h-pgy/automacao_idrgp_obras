@@ -14,8 +14,8 @@ load = Load(FINAl_FNAME)
 
 
 
-def etl():
+def etl(return_df=False):
 
     df = load_sheet()
     df_transformed = transform(df)
-    load(df_transformed)
+    return load(df_transformed, return_df)

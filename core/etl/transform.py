@@ -86,7 +86,11 @@ class Transformer:
     def __build_col_proxy(self, df:DataFrame, col_empenho:str)->DataFrame:
 
         df = df.copy()
-        col_proxy = self.__find_col(COL_PROXY, df)
+        try:
+            col_proxy = self.__find_col(COL_PROXY, df)
+        except ColunaDadosNaoEncontrada:
+            col_proxy='proxy'
+            df[col_proxy]=np.NaN
 
         grouped = df[['processo_limpo', col_empenho]].groupby('processo_limpo')
         grouped = grouped.sum().reset_index()
@@ -95,13 +99,29 @@ class Transformer:
 
         return df
     
+    def __filter_df(self, df:DataFrame)->DataFrame:
+
+        filtro = df['IDRGP'].str.lower().str.contains('sim')
+
+        return df[filtro].copy().reset_index(drop=True)
+    
     def pipeline(self, df:DataFrame)->DataFrame:
     
         proc_col = self.__find_col(COL_PROCESSO, df)
-        col_empenho=self.__find_col(COL_EMPENHO, df)
-        col_liquidacao=self.__find_col(COL_LIQUIDACAO, df)
+        print(proc_col)
+        try:
+            col_empenho=self.__find_col(COL_EMPENHO, df)
+        except ColunaDadosNaoEncontrada:
+            col_empenho='empenho liquido'
+            df[col_empenho]=np.NaN
+        try:
+            col_liquidacao=self.__find_col(COL_LIQUIDACAO, df)
+        except ColunaDadosNaoEncontrada:
+            col_liquidacao='valor_liquidado'
+            df[col_liquidacao]=np.NaN
 
         df=df.copy()
+        df = self.__filter_df(df)
         df[COL_DOTACAO]=''
         df['processo_limpo']=''
         df['status_etl'] = ''
@@ -109,8 +129,8 @@ class Transformer:
             print(i)
             try:
                 proc = self.__clean_processo(row[proc_col])
-                df['processo_limpo']=proc
-                api_resp = self.sof.get_last_empenho_by_proc(proc)
+                df.loc[i, 'processo_limpo']=proc
+                api_resp = self.sof.get_empenho_last_year_by_proc(proc)
 
                 df.loc[i, col_empenho] = self.__extract_val_empenhado(api_resp)
                 df.loc[i, col_liquidacao] = self.__extract_val_liquidado(api_resp)

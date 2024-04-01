@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Union
 from dotenv import load_dotenv
 
@@ -48,3 +49,5 @@ COL_PROCESSO=load_env_var('COL_PROCESSO')
 COL_EMPENHO=load_env_var('COL_EMPENHO')
 COL_LIQUIDACAO=load_env_var('COL_LIQUIDACAO')
 COL_PROXY=load_env_var('COL_PROXY')
+
+PROC_REGEX_PATT=re.compile(load_env_var('PROC_REGEX_PATT'))

@@ -45,7 +45,7 @@ class ParseProc:
             int(proc_limpo)
         except ValueError as e:
             if 'invalid literal for int' in str(e):
-                raise ProcessoForadoPadrao(f'Processo fora do Padrão. Original: {proc_original}. Limpo: {proc_limpo}')
+                raise ProcessoForadoPadrao(f'Erro: processo fora do Padrão. Original: {proc_original}. Limpo: {proc_limpo}')
             else:
                 raise e
                 
@@ -66,5 +66,8 @@ class ParseProc:
         extracted = self.__extract_from_regex(parsed_raw)
 
         parsed_clean = [self.__clean_processo(proc) for proc in extracted]
+
+        if len(parsed_clean) < 1:
+            raise ProcessoForadoPadrao(f'Erro: nenhum processo no formato encontrado. Valor original: {proc_num}')
 
         return parsed_clean

@@ -1,23 +1,71 @@
 import re
-from typing import Union, List, Tuple
-from core.exceptions.sof import ProcessoForadoPadrao
+from typing import Union, List, Tuple, Literal
+from core.exceptions.sof import ProcessoForadoPadrao, RespError
 
 from config import PROC_REGEX_PATT
 
-def build_dotacao(api_resp:dict)->str:
 
-    orgao = api_resp['codOrgao']
-    unidade = api_resp['codUnidade']
-    funcao = api_resp['codFuncao']
-    subfuncao = api_resp['codSubFuncao']
-    programa = api_resp['codPrograma']
-    acao = api_resp['codProjetoAtividade']
-    elemento = api_resp['codElemento']
-    fonte = api_resp['codFonteRecurso'][:2]
+class ExtractApiVal:
 
-    dotacao = f'{orgao}.{unidade}.{funcao}.{subfuncao}.{programa}.{acao}.{elemento}.{fonte}'
+    key_empenho = 'valEmpenhadoLiquido'
+    key_liquidacao = 'valLiquidado'
+    
+    def __extract_val(self, api_resp:dict, key:str, enforce_num=True)->Union[str, float]:
 
-    return dotacao
+        try:
+            val = api_resp[key]
+        except KeyError:
+            raise RespError(f'Erro na resposta do SOF. Chave {key} nao encontrada')
+        
+        if enforce_num:
+            try:
+                val = float(val)
+            except (ValueError, TypeError):
+                raise RespError(f'Erro na resposta do SOF para a chave {key}. Não foi possível converter para número: {val}')
+        
+        return val
+
+
+    def __extract_val_empenhado(self, api_resp:dict)->float:
+
+        return self.__extract_val(api_resp, self.key_empenho, True)
+        
+        
+    def __extract_val_liquidado(self, api_resp:dict)->float:
+
+        return self.__extract_val(api_resp, self.key_liquidacao, True)
+
+    def __build_dotacao(self, api_resp:dict)->str:
+
+        orgao = self.__extract_val(api_resp, 'codOrgao', False)
+        unidade = self.__extract_val(api_resp, 'codUnidade', False)
+        funcao = self.__extract_val(api_resp, 'codFuncao', False)
+        subfuncao = self.__extract_val(api_resp, 'codSubFuncao', False)
+        programa = self.__extract_val(api_resp, 'codPrograma', False)
+        acao = self.__extract_val(api_resp, 'codProjetoAtividade', False)
+        elemento = self.__extract_val(api_resp, 'codElemento', False)
+        fonte = self.__extract_val(api_resp, 'codFonteRecurso', False)[:2]
+
+        dotacao = f'{orgao}.{unidade}.{funcao}.{subfuncao}.{programa}.{acao}.{elemento}.{fonte}'
+
+        return dotacao
+    
+    def __solve_extraction(self, api_resp:dict, tipo=Literal['empenho', 'liquidacao', 'dotacao'])->Union[float, str]:
+
+        if tipo == 'empenho':
+            return self.__extract_val_empenhado(api_resp)
+        if tipo == 'liquidacao':
+            return self.__extract_val_liquidado(api_resp)
+        if tipo == 'dotacao':
+            return self.__build_dotacao(api_resp)
+
+    def __call__(self, api_resp:dict, tipo=Literal['empenho', 'liquidacao', 'dotacao'])->Union[float, str]:
+
+        tipos = {'empenho', 'liquidacao', 'dotacao'}
+        if tipo not in tipos:
+            raise NotImplementedError(f'Tipo nao disponivel. Disponiveis: {tipos}')
+        
+        return self.__solve_extraction(api_resp, tipo)
 
 class ParseProc:
 
@@ -59,9 +107,10 @@ class ParseProc:
         
         self.__assert_processo_clean(proc_num, proc)
         return proc
-    
-    def __call__(self, proc_num:str)->List[str]:
 
+    def __pipeline(self, proc_num:str)->List[str]:
+
+        proc_num = str(proc_num)
         parsed_raw = self.__parse(proc_num)
         extracted = self.__extract_from_regex(parsed_raw)
 
@@ -71,3 +120,14 @@ class ParseProc:
             raise ProcessoForadoPadrao(f'Erro: nenhum processo no formato encontrado. Valor original: {proc_num}')
 
         return parsed_clean
+    
+
+    def __call__(self, proc_num:str, raise_for_errors=False)->List[str]:
+
+        try:
+            return self.__pipeline(proc_num)
+        except Exception as e:
+            if raise_for_errors:
+                raise e
+            else:
+                return str(e)

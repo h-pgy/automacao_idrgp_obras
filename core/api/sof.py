@@ -49,7 +49,6 @@ class ApiSof:
 
         ano_anterior = current_year()-1
         for month in range(12, 0, -1):
-            print(f'Mes: {month}')
             resp = self.get_empenhos_by_proc(num_proc, month, ano_anterior)
             if resp:
                 if type(resp) is dict:

@@ -48,6 +48,7 @@ SOF_API_VERSION=load_env_var('SOF_API_VERSION')
 COL_PROCESSO=load_env_var('COL_PROCESSO')
 COL_EMPENHO=load_env_var('COL_EMPENHO')
 COL_LIQUIDACAO=load_env_var('COL_LIQUIDACAO')
-COL_PROXY=load_env_var('COL_PROXY')
 
 PROC_REGEX_PATT=re.compile(load_env_var('PROC_REGEX_PATT'))
+
+SAMPLE_SIZE=int(load_env_var('SAMPLE_SIZE'))
